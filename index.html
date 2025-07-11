@@ -58,18 +58,14 @@
       }
 
       if (fullWords.length === 0) {
-        // Inisialisasi dari textarea
         fullWords = input.split('\n').map(word => word.trim()).filter(Boolean);
         remainingWords = [...fullWords];
       }
 
       if (remainingWords.length === 0) {
-        // Reset ketika semua sudah dipilih
-        remainingWords = [...fullWords];
-        alert("Semua kata sudah dipilih. Daftar direset ulang.");
+        remainingWords = [...fullWords]; // Reset tanpa alert
       }
 
-      // Pilih random
       const index = Math.floor(Math.random() * remainingWords.length);
       const selected = remainingWords.splice(index, 1)[0];
 

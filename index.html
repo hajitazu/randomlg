@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pemilih Kata Acak</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+    }
+    textarea {
+      width: 80%;
+      height: 200px;
+      font-size: 16px;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Pemilih Kata Acak</h1>
+  <p>Masukkan kata-kata (satu per baris):</p>
+  <textarea id="wordInput" placeholder="Contoh:\na\nb\nc\nd"></textarea><br>
+  <button onclick="pickRandom()">Pilih Kata Acak</button>
+
+  <div class="result" id="resultArea"></div>
+
+  <script>
+    let remainingWords = [];
+    let fullWords = [];
+
+    function pickRandom() {
+      const input = document.getElementById('wordInput').value.trim();
+      if (!input) {
+        alert("Masukkan kata terlebih dahulu!");
+        return;
+      }
+
+      if (fullWords.length === 0) {
+        // Inisialisasi dari textarea
+        fullWords = input.split('\n').map(word => word.trim()).filter(Boolean);
+        remainingWords = [...fullWords];
+      }
+
+      if (remainingWords.length === 0) {
+        // Reset ketika semua sudah dipilih
+        remainingWords = [...fullWords];
+        alert("Semua kata sudah dipilih. Daftar direset ulang.");
+      }
+
+      // Pilih random
+      const index = Math.floor(Math.random() * remainingWords.length);
+      const selected = remainingWords.splice(index, 1)[0];
+
+      document.getElementById('resultArea').textContent = "🎯 " + selected;
+    }
+  </script>
+
+</body>
+</html>

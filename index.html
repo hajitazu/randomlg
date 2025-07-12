@@ -11,86 +11,123 @@
       padding: 40px;
       background: #f9f9f9;
     }
-    textarea {
+    textarea, input[type="number"] {
       width: 80%;
-      height: 200px;
       font-size: 16px;
       padding: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
+    }
+    textarea {
+      height: 200px;
     }
     button {
       padding: 10px 20px;
       font-size: 18px;
-      background-color: #007bff;
+      margin: 5px;
       border: none;
       color: white;
-      cursor: pointer;
       border-radius: 5px;
-      margin: 5px;
+      cursor: pointer;
     }
-    button:hover {
+    #pickButton {
+      background-color: #007bff;
+    }
+    #pickButton:hover {
       background-color: #0056b3;
     }
-    .result {
-      margin-top: 30px;
-      font-size: 24px;
-      font-weight: bold;
-    }
     #copyButton {
-      display: none;
       background-color: #28a745;
     }
     #copyButton:hover {
       background-color: #218838;
     }
+    #clearButton {
+      background-color: #dc3545;
+    }
+    #clearButton:hover {
+      background-color: #bd2130;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      white-space: pre-line;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Pemilih Kata Acak</h1>
+  <h1>Pemilih Kata Acak Banyak</h1>
+
   <p>Masukkan kata-kata (satu per baris):</p>
-  <textarea id="wordInput" placeholder="Contoh:\na\nb\nc\nd"></textarea><br>
-  <button onclick="pickRandom()">Pilih Kata Acak</button>
+  <textarea id="wordInput" placeholder="Contoh:\napel\npisang\njeruk"></textarea><br>
+
+  <input type="number" id="jumlahInput" placeholder="Jumlah kata yang ingin dipilih (contoh: 16)" min="1"><br>
+
+  <button id="pickButton" onclick="pickRandom()">Pilih Kata Acak</button>
+  <button id="copyButton" style="display:none" onclick="copyToClipboard()">📋 Salin</button>
+  <button id="clearButton" onclick="clearWords()">🧹 Bersihkan Kata</button>
 
   <div class="result" id="resultArea"></div>
-  <button id="copyButton" onclick="copyToClipboard()">📋 Salin</button>
 
   <script>
-    let remainingWords = [];
     let fullWords = [];
+    let pickedWords = [];
+
+    // Simpan textarea ke localStorage saat diubah
+    const textarea = document.getElementById('wordInput');
+    textarea.addEventListener('input', () => {
+      localStorage.setItem('savedWords', textarea.value);
+    });
+
+    // Ambil data dari localStorage saat load
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('savedWords');
+      if (saved) {
+        textarea.value = saved;
+      }
+    });
 
     function pickRandom() {
-      const input = document.getElementById('wordInput').value.trim();
+      const input = textarea.value.trim();
+      const jumlah = parseInt(document.getElementById('jumlahInput').value);
+
       if (!input) {
-        alert("Masukkan kata terlebih dahulu!");
+        alert("Masukkan daftar kata terlebih dahulu!");
         return;
       }
 
-      if (fullWords.length === 0) {
-        fullWords = input.split('\n').map(word => word.trim()).filter(Boolean);
-        remainingWords = [...fullWords];
+      fullWords = input.split('\n').map(k => k.trim()).filter(Boolean);
+      if (isNaN(jumlah) || jumlah < 1) {
+        alert("Masukkan jumlah kata yang valid!");
+        return;
       }
 
-      if (remainingWords.length === 0) {
-        remainingWords = [...fullWords]; // Reset otomatis
+      if (jumlah > fullWords.length) {
+        alert(`Jumlah kata yang diminta (${jumlah}) melebihi jumlah kata yang tersedia (${fullWords.length})`);
+        return;
       }
 
-      const index = Math.floor(Math.random() * remainingWords.length);
-      const selected = remainingWords.splice(index, 1)[0];
+      // Pilih kata secara acak tanpa duplikat
+      let pool = [...fullWords];
+      pickedWords = [];
 
-      document.getElementById('resultArea').textContent = "🎯 " + selected;
+      for (let i = 0; i < jumlah; i++) {
+        const index = Math.floor(Math.random() * pool.length);
+        pickedWords.push(pool.splice(index, 1)[0]);
+      }
 
+      document.getElementById('resultArea').textContent = "🎯 Hasil Acak:\n" + pickedWords.join('\n');
       const copyBtn = document.getElementById('copyButton');
       copyBtn.style.display = 'inline-block';
-      copyBtn.setAttribute('data-word', selected);
       copyBtn.textContent = "📋 Salin";
     }
 
     function copyToClipboard() {
       const copyBtn = document.getElementById('copyButton');
-      const word = copyBtn.getAttribute('data-word');
+      const hasil = pickedWords.join('\n');
 
-      navigator.clipboard.writeText(word).then(() => {
+      navigator.clipboard.writeText(hasil).then(() => {
         copyBtn.textContent = "✅ Disalin";
         setTimeout(() => {
           copyBtn.textContent = "📋 Salin";
@@ -101,6 +138,15 @@
           copyBtn.textContent = "📋 Salin";
         }, 1000);
       });
+    }
+
+    function clearWords() {
+      if (confirm("Yakin ingin menghapus semua kata?")) {
+        textarea.value = "";
+        localStorage.removeItem('savedWords');
+        document.getElementById('resultArea').textContent = "";
+        document.getElementById('copyButton').style.display = 'none';
+      }
     }
   </script>
 

@@ -3,13 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pemilih Kata Acak (Target Jumlah)</title>
+  <title>Pemilih Nama & Kelas</title>
   <style>
     body {
       font-family: sans-serif;
-      text-align: center;
-      padding: 40px;
+      margin: 0;
       background: #f9f9f9;
+      padding: 0;
+    }
+    header {
+      display: flex;
+      justify-content: center;
+      background: #007bff;
+    }
+    header button {
+      flex: 1;
+      padding: 15px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      color: white;
+      background: #007bff;
+    }
+    header button.active {
+      background: #0056b3;
+    }
+    .container {
+      padding: 20px;
+      text-align: center;
     }
     textarea, input[type="number"] {
       width: 80%;
@@ -18,131 +39,126 @@
       margin-bottom: 15px;
     }
     textarea {
-      height: 150px;
+      height: 100px;
     }
-    button {
+    button.action {
       padding: 10px 20px;
-      font-size: 18px;
+      font-size: 16px;
       margin: 5px;
       border: none;
       color: white;
       border-radius: 5px;
       cursor: pointer;
     }
-    #pickButton {
-      background-color: #007bff;
+    .pick { background-color: #007bff; }
+    .copy { background-color: #28a745; }
+    .clear { background-color: #dc3545; }
+    .result-area {
+      width: 80%;
+      height: 100px;
+      margin-top: 10px;
+      resize: none;
     }
-    #pickButton:hover {
-      background-color: #0056b3;
-    }
-    #copyButton {
-      background-color: #28a745;
-    }
-    #copyButton:hover {
-      background-color: #218838;
-    }
-    #clearButton {
-      background-color: #dc3545;
-    }
-    #clearButton:hover {
-      background-color: #bd2130;
-    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
+  <header>
+    <button id="tabNama" class="active" onclick="switchTab('nama')">Nama</button>
+    <button id="tabKelas" onclick="switchTab('kelas')">Kelas</button>
+  </header>
 
-  <h1>Pemilih Kata Acak</h1>
+  <div class="container" id="menuNama">
+    <h2>Pemilih Nama</h2>
+    <textarea id="namaInput" placeholder="Masukkan daftar nama..."></textarea><br>
+    <input type="number" id="jumlahNama" placeholder="Jumlah yang ingin dipilih" min="1"><br>
+    <button class="action pick" onclick="pickRandom('nama')">Pilih Nama</button>
+    <button class="action copy" onclick="copyToClipboard('nama')">Salin</button>
+    <button class="action clear" onclick="clearInput('nama')">Bersihkan</button><br>
+    <textarea readonly id="hasilNama" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
+  </div>
 
-  <p>Masukkan kata-kata (satu per baris):</p>
-  <textarea id="wordInput" placeholder="Contoh:\napel\npisang\njeruk"></textarea><br>
-
-  <input type="number" id="jumlahInput" placeholder="Jumlah kata yang ingin dipilih (contoh: 16)" min="1"><br>
-
-  <button id="pickButton" onclick="pickRandom()">Pilih Kata Acak</button>
-  <button id="copyButton" style="display:none" onclick="copyToClipboard()">📋 Salin</button>
-  <button id="clearButton" onclick="clearWords()">🧹 Bersihkan Kata</button>
-
-  <p>Hasil kata acak:</p>
-  <textarea id="resultArea" readonly placeholder="Hasil akan muncul di sini..."></textarea>
+  <div class="container hidden" id="menuKelas">
+    <h2>Pemilih Kelas</h2>
+    <textarea id="kelasLInput" placeholder="Kelas untuk Laki-laki..."></textarea><br>
+    <textarea id="kelasPInput" placeholder="Kelas untuk Perempuan..."></textarea><br>
+    <label><input type="radio" name="gender" value="l" checked> Laki-laki</label>
+    <label><input type="radio" name="gender" value="p"> Perempuan</label><br><br>
+    <input type="number" id="jumlahKelas" placeholder="Jumlah yang ingin dipilih" min="1"><br>
+    <button class="action pick" onclick="pickRandom('kelas')">Pilih Kelas</button>
+    <button class="action copy" onclick="copyToClipboard('kelas')">Salin</button>
+    <button class="action clear" onclick="clearInput('kelas')">Bersihkan</button><br>
+    <textarea readonly id="hasilKelas" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
+  </div>
 
   <script>
-    let fullWords = [];
+    // Simpan dan ambil dari localStorage
+    window.onload = () => {
+      document.getElementById('namaInput').value = localStorage.getItem('namaInput') || "";
+      document.getElementById('kelasLInput').value = localStorage.getItem('kelasLInput') || "";
+      document.getElementById('kelasPInput').value = localStorage.getItem('kelasPInput') || "";
+    };
 
-    const textarea = document.getElementById('wordInput');
-    const resultArea = document.getElementById('resultArea');
-    const jumlahInput = document.getElementById('jumlahInput');
+    function switchTab(tab) {
+      document.getElementById('menuNama').classList.toggle('hidden', tab !== 'nama');
+      document.getElementById('menuKelas').classList.toggle('hidden', tab !== 'kelas');
+      document.getElementById('tabNama').classList.toggle('active', tab === 'nama');
+      document.getElementById('tabKelas').classList.toggle('active', tab === 'kelas');
+    }
 
-    // Simpan textarea ke localStorage
-    textarea.addEventListener('input', () => {
-      localStorage.setItem('savedWords', textarea.value);
-    });
+    function pickRandom(type) {
+      let list = [], jumlah = 0, output = [], pool = [];
 
-    // Ambil dari localStorage saat halaman dimuat
-    window.addEventListener('DOMContentLoaded', () => {
-      const saved = localStorage.getItem('savedWords');
-      if (saved) textarea.value = saved;
-    });
-
-    function pickRandom() {
-      const input = textarea.value.trim();
-      const jumlah = parseInt(jumlahInput.value);
-
-      if (!input) {
-        alert("Masukkan daftar kata terlebih dahulu!");
-        return;
+      if (type === 'nama') {
+        list = document.getElementById('namaInput').value.trim().split('\n').filter(Boolean);
+        jumlah = parseInt(document.getElementById('jumlahNama').value);
+        localStorage.setItem('namaInput', document.getElementById('namaInput').value);
+      } else {
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const source = gender === 'l' ? 'kelasLInput' : 'kelasPInput';
+        list = document.getElementById(source).value.trim().split('\n').filter(Boolean);
+        jumlah = parseInt(document.getElementById('jumlahKelas').value);
+        localStorage.setItem('kelasLInput', document.getElementById('kelasLInput').value);
+        localStorage.setItem('kelasPInput', document.getElementById('kelasPInput').value);
       }
 
-      if (isNaN(jumlah) || jumlah < 1) {
-        alert("Masukkan jumlah kata yang valid!");
-        return;
-      }
+      if (!jumlah || jumlah < 1 || list.length === 0) return;
 
-      fullWords = input.split('\n').map(k => k.trim()).filter(Boolean);
-      if (fullWords.length === 0) {
-        alert("Daftar kata tidak valid.");
-        return;
-      }
-
-      let pickedWords = [];
-      let pool = [...fullWords];
-
-      while (pickedWords.length < jumlah) {
-        if (pool.length === 0) {
-          pool = [...fullWords]; // Reset siklus jika habis
-        }
-
+      pool = [...list];
+      while (output.length < jumlah) {
+        if (pool.length === 0) pool = [...list];
         const index = Math.floor(Math.random() * pool.length);
-        const selected = pool.splice(index, 1)[0];
-        pickedWords.push(selected);
+        output.push(pool.splice(index, 1)[0]);
       }
 
-      resultArea.value = pickedWords.join('\n');
-
-      const copyBtn = document.getElementById('copyButton');
-      copyBtn.style.display = 'inline-block';
-      copyBtn.textContent = "📋 Salin";
+      const target = type === 'nama' ? 'hasilNama' : 'hasilKelas';
+      document.getElementById(target).value = output.join('\n');
     }
 
-    function copyToClipboard() {
-      const copyBtn = document.getElementById('copyButton');
-      navigator.clipboard.writeText(resultArea.value).then(() => {
-        copyBtn.textContent = "✅ Disalin";
-        setTimeout(() => {
-          copyBtn.textContent = "📋 Salin";
-        }, 1000);
-      }).catch(() => {
-        copyBtn.textContent = "❌ Gagal";
-        setTimeout(() => {
-          copyBtn.textContent = "📋 Salin";
-        }, 1000);
-      });
+    function copyToClipboard(type) {
+      const field = type === 'nama' ? 'hasilNama' : 'hasilKelas';
+      const button = event.target;
+      navigator.clipboard.writeText(document.getElementById(field).value)
+        .then(() => {
+          const prev = button.textContent;
+          button.textContent = '✅ Disalin';
+          setTimeout(() => button.textContent = prev, 1000);
+        });
     }
 
-    function clearWords() {
-      textarea.value = "";
-      localStorage.removeItem('savedWords');
+    function clearInput(type) {
+      if (type === 'nama') {
+        document.getElementById('namaInput').value = "";
+        localStorage.removeItem('namaInput');
+        document.getElementById('hasilNama').value = "";
+      } else {
+        document.getElementById('kelasLInput').value = "";
+        document.getElementById('kelasPInput').value = "";
+        localStorage.removeItem('kelasLInput');
+        localStorage.removeItem('kelasPInput');
+        document.getElementById('hasilKelas').value = "";
+      }
     }
   </script>
-
 </body>
 </html>

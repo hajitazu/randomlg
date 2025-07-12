@@ -26,6 +26,7 @@
       color: white;
       cursor: pointer;
       border-radius: 5px;
+      margin: 5px;
     }
     button:hover {
       background-color: #0056b3;
@@ -34,6 +35,13 @@
       margin-top: 30px;
       font-size: 24px;
       font-weight: bold;
+    }
+    #copyButton {
+      display: none;
+      background-color: #28a745;
+    }
+    #copyButton:hover {
+      background-color: #218838;
     }
   </style>
 </head>
@@ -45,6 +53,7 @@
   <button onclick="pickRandom()">Pilih Kata Acak</button>
 
   <div class="result" id="resultArea"></div>
+  <button id="copyButton" onclick="copyToClipboard()">📋 Salin</button>
 
   <script>
     let remainingWords = [];
@@ -63,13 +72,35 @@
       }
 
       if (remainingWords.length === 0) {
-        remainingWords = [...fullWords]; // Reset tanpa alert
+        remainingWords = [...fullWords]; // Reset otomatis
       }
 
       const index = Math.floor(Math.random() * remainingWords.length);
       const selected = remainingWords.splice(index, 1)[0];
 
-      document.getElementById('resultArea').textContent = "🎯  " + selected;
+      document.getElementById('resultArea').textContent = "🎯 " + selected;
+
+      const copyBtn = document.getElementById('copyButton');
+      copyBtn.style.display = 'inline-block';
+      copyBtn.setAttribute('data-word', selected);
+      copyBtn.textContent = "📋 Salin";
+    }
+
+    function copyToClipboard() {
+      const copyBtn = document.getElementById('copyButton');
+      const word = copyBtn.getAttribute('data-word');
+
+      navigator.clipboard.writeText(word).then(() => {
+        copyBtn.textContent = "✅ Disalin";
+        setTimeout(() => {
+          copyBtn.textContent = "📋 Salin";
+        }, 1000);
+      }).catch(() => {
+        copyBtn.textContent = "❌ Gagal";
+        setTimeout(() => {
+          copyBtn.textContent = "📋 Salin";
+        }, 1000);
+      });
     }
   </script>
 

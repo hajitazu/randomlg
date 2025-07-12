@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pemilih Kata Acak</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pemilih Kata Acak (Target Jumlah)</title>
   <style>
     body {
       font-family: sans-serif;
@@ -67,13 +67,12 @@
 
   <script>
     let fullWords = [];
-    let pickedWords = [];
 
     const textarea = document.getElementById('wordInput');
     const resultArea = document.getElementById('resultArea');
     const jumlahInput = document.getElementById('jumlahInput');
 
-    // Simpan isi textarea ke localStorage
+    // Simpan textarea ke localStorage
     textarea.addEventListener('input', () => {
       localStorage.setItem('savedWords', textarea.value);
     });
@@ -93,23 +92,28 @@
         return;
       }
 
-      fullWords = input.split('\n').map(k => k.trim()).filter(Boolean);
       if (isNaN(jumlah) || jumlah < 1) {
         alert("Masukkan jumlah kata yang valid!");
         return;
       }
 
-      if (jumlah > fullWords.length) {
-        alert(`Jumlah yang diminta (${jumlah}) melebihi jumlah kata yang tersedia (${fullWords.length})`);
+      fullWords = input.split('\n').map(k => k.trim()).filter(Boolean);
+      if (fullWords.length === 0) {
+        alert("Daftar kata tidak valid.");
         return;
       }
 
+      let pickedWords = [];
       let pool = [...fullWords];
-      pickedWords = [];
 
-      for (let i = 0; i < jumlah; i++) {
+      while (pickedWords.length < jumlah) {
+        if (pool.length === 0) {
+          pool = [...fullWords]; // Reset siklus jika habis
+        }
+
         const index = Math.floor(Math.random() * pool.length);
-        pickedWords.push(pool.splice(index, 1)[0]);
+        const selected = pool.splice(index, 1)[0];
+        pickedWords.push(selected);
       }
 
       resultArea.value = pickedWords.join('\n');

@@ -18,7 +18,7 @@
       margin-bottom: 15px;
     }
     textarea {
-      height: 200px;
+      height: 150px;
     }
     button {
       padding: 10px 20px;
@@ -47,17 +47,11 @@
     #clearButton:hover {
       background-color: #bd2130;
     }
-    .result {
-      margin-top: 30px;
-      font-size: 20px;
-      font-weight: bold;
-      white-space: pre-line;
-    }
   </style>
 </head>
 <body>
 
-  <h1>Pemilih Kata Acak Banyak</h1>
+  <h1>Pemilih Kata Acak</h1>
 
   <p>Masukkan kata-kata (satu per baris):</p>
   <textarea id="wordInput" placeholder="Contoh:\napel\npisang\njeruk"></textarea><br>
@@ -68,29 +62,31 @@
   <button id="copyButton" style="display:none" onclick="copyToClipboard()">📋 Salin</button>
   <button id="clearButton" onclick="clearWords()">🧹 Bersihkan Kata</button>
 
-  <div class="result" id="resultArea"></div>
+  <p>Hasil kata acak:</p>
+  <textarea id="resultArea" readonly placeholder="Hasil akan muncul di sini..."></textarea>
 
   <script>
     let fullWords = [];
     let pickedWords = [];
 
-    // Simpan textarea ke localStorage saat diubah
     const textarea = document.getElementById('wordInput');
+    const resultArea = document.getElementById('resultArea');
+    const jumlahInput = document.getElementById('jumlahInput');
+
+    // Simpan isi textarea ke localStorage
     textarea.addEventListener('input', () => {
       localStorage.setItem('savedWords', textarea.value);
     });
 
-    // Ambil data dari localStorage saat load
+    // Ambil dari localStorage saat halaman dimuat
     window.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem('savedWords');
-      if (saved) {
-        textarea.value = saved;
-      }
+      if (saved) textarea.value = saved;
     });
 
     function pickRandom() {
       const input = textarea.value.trim();
-      const jumlah = parseInt(document.getElementById('jumlahInput').value);
+      const jumlah = parseInt(jumlahInput.value);
 
       if (!input) {
         alert("Masukkan daftar kata terlebih dahulu!");
@@ -104,11 +100,10 @@
       }
 
       if (jumlah > fullWords.length) {
-        alert(`Jumlah kata yang diminta (${jumlah}) melebihi jumlah kata yang tersedia (${fullWords.length})`);
+        alert(`Jumlah yang diminta (${jumlah}) melebihi jumlah kata yang tersedia (${fullWords.length})`);
         return;
       }
 
-      // Pilih kata secara acak tanpa duplikat
       let pool = [...fullWords];
       pickedWords = [];
 
@@ -117,7 +112,8 @@
         pickedWords.push(pool.splice(index, 1)[0]);
       }
 
-      document.getElementById('resultArea').textContent = "🎯 Hasil Acak:\n" + pickedWords.join('\n');
+      resultArea.value = pickedWords.join('\n');
+
       const copyBtn = document.getElementById('copyButton');
       copyBtn.style.display = 'inline-block';
       copyBtn.textContent = "📋 Salin";
@@ -125,9 +121,7 @@
 
     function copyToClipboard() {
       const copyBtn = document.getElementById('copyButton');
-      const hasil = pickedWords.join('\n');
-
-      navigator.clipboard.writeText(hasil).then(() => {
+      navigator.clipboard.writeText(resultArea.value).then(() => {
         copyBtn.textContent = "✅ Disalin";
         setTimeout(() => {
           copyBtn.textContent = "📋 Salin";
@@ -141,12 +135,8 @@
     }
 
     function clearWords() {
-      if (confirm("Yakin ingin menghapus semua kata?")) {
-        textarea.value = "";
-        localStorage.removeItem('savedWords');
-        document.getElementById('resultArea').textContent = "";
-        document.getElementById('copyButton').style.display = 'none';
-      }
+      textarea.value = "";
+      localStorage.removeItem('savedWords');
     }
   </script>
 

@@ -1,8 +1,9 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pemilih Nama & Kelas</title>
+  <title>Pemilih Nama, Kelas & Tanggal</title>
   <style>
     body {
       font-family: sans-serif;
@@ -59,12 +60,43 @@
       resize: none;
     }
     .hidden { display: none; }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      justify-items: center;
+      margin-top: 20px;
+    }
+    .calendar div {
+      padding: 10px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+    }
+    .calendar div.selected {
+      background-color: #007bff;
+      color: white;
+    }
+    #splash {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      z-index: 999;
+    }
   </style>
 </head>
 <body>
-  <header>
+  <div id="splash">HOLA!</div>  <header>
     <button id="tabNama" class="active" onclick="switchTab('nama')">Nama</button>
     <button id="tabKelas" onclick="switchTab('kelas')">Kelas</button>
+    <button id="tabTanggal" onclick="switchTab('tanggal')">Tanggal</button>
   </header>  <div class="container" id="menuNama">
     <h2>Pemilih Nama</h2>
     <textarea id="namaInput" placeholder="Masukkan daftar nama..."></textarea><br>
@@ -84,19 +116,30 @@
     <button class="action copy" onclick="copyToClipboard('kelas')">Salin</button>
     <button class="action clear" onclick="clearInput('kelas')">Bersihkan</button><br>
     <textarea readonly id="hasilKelas" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
+  </div>  <div class="container hidden" id="menuTanggal">
+    <h2>Pilih Tanggal</h2>
+    <div id="calendar" class="calendar"></div>
+    <button class="action copy" onclick="copyToClipboard('tanggal')">Salin</button>
+    <button class="action clear" onclick="clearInput('tanggal')">Bersihkan</button><br>
+    <textarea readonly id="hasilTanggal" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
   </div>  <script>
-    // Simpan dan ambil dari localStorage
+    const selectedDates = new Set();
+
     window.onload = () => {
       document.getElementById('namaInput').value = localStorage.getItem('namaInput') || "";
       document.getElementById('kelasLInput').value = localStorage.getItem('kelasLInput') || "";
       document.getElementById('kelasPInput').value = localStorage.getItem('kelasPInput') || "";
+      generateCalendar();
+      setTimeout(() => document.getElementById('splash').style.display = 'none', 2000);
     };
 
     function switchTab(tab) {
-      document.getElementById('menuNama').classList.toggle('hidden', tab !== 'nama');
-      document.getElementById('menuKelas').classList.toggle('hidden', tab !== 'kelas');
-      document.getElementById('tabNama').classList.toggle('active', tab === 'nama');
-      document.getElementById('tabKelas').classList.toggle('active', tab === 'kelas');
+      ['menuNama', 'menuKelas', 'menuTanggal'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== 'menu' + tab.charAt(0).toUpperCase() + tab.slice(1));
+      });
+      ['tabNama', 'tabKelas', 'tabTanggal'].forEach(id => {
+        document.getElementById(id).classList.toggle('active', id === 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+      });
     }
 
     function pickRandom(type) {
@@ -129,7 +172,7 @@
     }
 
     function copyToClipboard(type) {
-      const field = type === 'nama' ? 'hasilNama' : 'hasilKelas';
+      const field = type === 'nama' ? 'hasilNama' : type === 'kelas' ? 'hasilKelas' : 'hasilTanggal';
       const button = event.target;
       navigator.clipboard.writeText(document.getElementById(field).value)
         .then(() => {
@@ -144,13 +187,49 @@
         document.getElementById('namaInput').value = "";
         localStorage.removeItem('namaInput');
         document.getElementById('hasilNama').value = "";
-      } else {
+      } else if (type === 'kelas') {
         document.getElementById('kelasLInput').value = "";
         document.getElementById('kelasPInput').value = "";
         localStorage.removeItem('kelasLInput');
         localStorage.removeItem('kelasPInput');
         document.getElementById('hasilKelas').value = "";
+      } else if (type === 'tanggal') {
+        selectedDates.clear();
+        document.querySelectorAll('#calendar div').forEach(d => d.classList.remove('selected'));
+        document.getElementById('hasilTanggal').value = "";
       }
+    }
+
+    function generateCalendar() {
+      const calendar = document.getElementById('calendar');
+      calendar.innerHTML = '';
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let i = 1; i <= daysInMonth; i++) {
+        const day = document.createElement('div');
+        day.textContent = i;
+        day.onclick = () => toggleDate(i, month + 1, year % 100, day);
+        calendar.appendChild(day);
+      }
+    }
+
+    function toggleDate(d, m, y, el) {
+      const formatted = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${String(y).padStart(2,'0')}`;
+      if (selectedDates.has(formatted)) {
+        selectedDates.delete(formatted);
+        el.classList.remove('selected');
+      } else {
+        selectedDates.add(formatted);
+        el.classList.add('selected');
+      }
+      const sorted = Array.from(selectedDates).sort((a, b) => {
+        const [da, ma, ya] = a.split('/').map(Number);
+        const [db, mb, yb] = b.split('/').map(Number);
+        return new Date(2000 + ya, ma - 1, da) - new Date(2000 + yb, mb - 1, db);
+      });
+      document.getElementById('hasilTanggal').value = sorted.join('\n');
     }
   </script></body>
 </html>

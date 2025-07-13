@@ -78,22 +78,10 @@
       background-color: #007bff;
       color: white;
     }
-    #splash {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-      font-weight: bold;
-      z-index: 999;
-    }
   </style>
 </head>
 <body>
-  <div id="splash">HOLA!</div>  <header>
+  <header>
     <button id="tabNama" class="active" onclick="switchTab('nama')">Nama</button>
     <button id="tabKelas" onclick="switchTab('kelas')">Kelas</button>
     <button id="tabTanggal" onclick="switchTab('tanggal')">Tanggal</button>
@@ -130,16 +118,22 @@
       document.getElementById('kelasLInput').value = localStorage.getItem('kelasLInput') || "";
       document.getElementById('kelasPInput').value = localStorage.getItem('kelasPInput') || "";
       generateCalendar();
-      setTimeout(() => document.getElementById('splash').style.display = 'none', 2000);
     };
 
     function switchTab(tab) {
-      ['menuNama', 'menuKelas', 'menuTanggal'].forEach(id => {
-        document.getElementById(id).classList.toggle('hidden', id !== 'menu' + tab.charAt(0).toUpperCase() + tab.slice(1));
-      });
-      ['tabNama', 'tabKelas', 'tabTanggal'].forEach(id => {
-        document.getElementById(id).classList.toggle('active', id === 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
-      });
+      document.getElementById('menuNama').classList.add('hidden');
+      document.getElementById('menuKelas').classList.add('hidden');
+      document.getElementById('menuTanggal').classList.add('hidden');
+      document.getElementById('tabNama').classList.remove('active');
+      document.getElementById('tabKelas').classList.remove('active');
+      document.getElementById('tabTanggal').classList.remove('active');
+
+      document.getElementById('menu' + capitalize(tab)).classList.remove('hidden');
+      document.getElementById('tab' + capitalize(tab)).classList.add('active');
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     function pickRandom(type) {

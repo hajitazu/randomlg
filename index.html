@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="id">
+<!DOCTYPE html><html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -66,9 +65,7 @@
   <header>
     <button id="tabNama" class="active" onclick="switchTab('nama')">Nama</button>
     <button id="tabKelas" onclick="switchTab('kelas')">Kelas</button>
-  </header>
-
-  <div class="container" id="menuNama">
+  </header>  <div class="container" id="menuNama">
     <h2>Pemilih Nama</h2>
     <textarea id="namaInput" placeholder="Masukkan daftar nama..."></textarea><br>
     <input type="number" id="jumlahNama" placeholder="Jumlah yang ingin dipilih" min="1"><br>
@@ -76,9 +73,7 @@
     <button class="action copy" onclick="copyToClipboard('nama')">Salin</button>
     <button class="action clear" onclick="clearInput('nama')">Bersihkan</button><br>
     <textarea readonly id="hasilNama" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>
-
-  <div class="container hidden" id="menuKelas">
+  </div>  <div class="container hidden" id="menuKelas">
     <h2>Pemilih Kelas</h2>
     <textarea id="kelasLInput" placeholder="Kelas untuk Laki-laki..."></textarea><br>
     <textarea id="kelasPInput" placeholder="Kelas untuk Perempuan..."></textarea><br>
@@ -89,9 +84,7 @@
     <button class="action copy" onclick="copyToClipboard('kelas')">Salin</button>
     <button class="action clear" onclick="clearInput('kelas')">Bersihkan</button><br>
     <textarea readonly id="hasilKelas" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>
-
-  <script>
+  </div>  <script>
     // Simpan dan ambil dari localStorage
     window.onload = () => {
       document.getElementById('namaInput').value = localStorage.getItem('namaInput') || "";
@@ -159,6 +152,5 @@
         document.getElementById('hasilKelas').value = "";
       }
     }
-  </script>
-</body>
+  </script></body>
 </html>

@@ -60,21 +60,41 @@
       resize: none;
     }
     .hidden { display: none; }
+    .calendar-header {
+      margin-bottom: 10px;
+    }
+    .calendar-nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .calendar-nav button {
+      padding: 5px 10px;
+      font-size: 16px;
+    }
     .calendar {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 5px;
       justify-items: center;
-      margin-top: 20px;
     }
-    .calendar div {
-      padding: 10px;
+    .calendar .day {
+      font-weight: bold;
+      text-align: center;
+    }
+    .calendar .date-box {
+      padding: 10px 5px;
       cursor: pointer;
       border: 1px solid #ccc;
       border-radius: 4px;
       background: white;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
     }
-    .calendar div.selected {
+    .calendar .selected {
       background-color: #007bff;
       color: white;
     }
@@ -106,18 +126,27 @@
     <textarea readonly id="hasilKelas" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
   </div>  <div class="container hidden" id="menuTanggal">
     <h2>Pilih Tanggal</h2>
+    <div class="calendar-header">
+      <div class="calendar-nav">
+        <button onclick="changeMonth(-1)">&lt;</button>
+        <span id="calendarMonthYear"></span>
+        <button onclick="changeMonth(1)">&gt;</button>
+      </div>
+    </div>
     <div id="calendar" class="calendar"></div>
     <button class="action copy" onclick="copyToClipboard('tanggal')">Salin</button>
     <button class="action clear" onclick="clearInput('tanggal')">Bersihkan</button><br>
     <textarea readonly id="hasilTanggal" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
   </div>  <script>
     const selectedDates = new Set();
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
 
     window.onload = () => {
       document.getElementById('namaInput').value = localStorage.getItem('namaInput') || "";
       document.getElementById('kelasLInput').value = localStorage.getItem('kelasLInput') || "";
       document.getElementById('kelasPInput').value = localStorage.getItem('kelasPInput') || "";
-      generateCalendar();
+      generateCalendar(currentMonth, currentYear);
     };
 
     function switchTab(tab) {
@@ -189,23 +218,43 @@
         document.getElementById('hasilKelas').value = "";
       } else if (type === 'tanggal') {
         selectedDates.clear();
-        document.querySelectorAll('#calendar div').forEach(d => d.classList.remove('selected'));
+        document.querySelectorAll('.calendar .date-box').forEach(d => d.classList.remove('selected'));
         document.getElementById('hasilTanggal').value = "";
       }
     }
 
-    function generateCalendar() {
+    function generateCalendar(month, year) {
       const calendar = document.getElementById('calendar');
       calendar.innerHTML = '';
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
+      document.getElementById('calendarMonthYear').textContent = `${monthName(month)} ${year}`;
+
+      const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+      days.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'day';
+        el.textContent = d;
+        calendar.appendChild(el);
+      });
+
+      const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        calendar.appendChild(empty);
+      }
+
       for (let i = 1; i <= daysInMonth; i++) {
-        const day = document.createElement('div');
-        day.textContent = i;
-        day.onclick = () => toggleDate(i, month + 1, year % 100, day);
-        calendar.appendChild(day);
+        const day = new Date(year, month, i).getDay();
+        const box = document.createElement('div');
+        box.className = 'date-box';
+        box.innerHTML = `<div>${i}</div><div>${days[day]}</div>`;
+
+        const formatted = `${String(i).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${String(year%100).padStart(2,'0')}`;
+        if (selectedDates.has(formatted)) box.classList.add('selected');
+
+        box.onclick = () => toggleDate(i, month+1, year % 100, box);
+        calendar.appendChild(box);
       }
     }
 
@@ -224,6 +273,22 @@
         return new Date(2000 + ya, ma - 1, da) - new Date(2000 + yb, mb - 1, db);
       });
       document.getElementById('hasilTanggal').value = sorted.join('\n');
+    }
+
+    function changeMonth(offset) {
+      currentMonth += offset;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      generateCalendar(currentMonth, currentYear);
+    }
+
+    function monthName(m) {
+      return ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][m];
     }
   </script></body>
 </html>

@@ -16,6 +16,7 @@
     .pick { background-color: #007bff; }
     .copy { background-color: #28a745; }
     .clear { background-color: #dc3545; }
+    .sync { background-color: #6f42c1; }
     .result-area { width: 80%; height: 100px; margin-top: 10px; resize: none; }
     .hidden { display: none; }
     .kelas-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
@@ -44,6 +45,7 @@
     <div class="kelas-buttons" id="kelasButtons"></div>
     <input type="number" id="jumlahKelasAuto" placeholder="Jumlah yang ingin dipilih" min="1"><br>
     <button class="action pick" onclick="pickKelasAuto()">Pilih Kelas</button>
+    <button class="action sync" onclick="sinkronKelas()">Sinkron</button>
     <button class="action copy" onclick="copyToClipboard('kelas')">Salin</button>
     <button class="action clear" onclick="clearInput('kelas')">Bersihkan</button><br>
     <textarea readonly id="hasilKelas" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
@@ -61,12 +63,11 @@
     <button class="action clear" onclick="clearInput('tanggal')">Bersihkan</button><br>
     <textarea readonly id="hasilTanggal" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
   </div>  <script>
+    const semuaKelas = ["7A","7B","7C","7D","7E","8A","8B","8C","8D","8E","9A","9B","9C","9D","9E"];
+    let kelasTerpilih = new Set();
     const selectedDates = new Set();
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
-
-    const semuaKelas = ["7A","7B","7C","7D","7E","8A","8B","8C","8D","8E","9A","9B","9C","9D","9E"];
-    let kelasTerpilih = new Set();
 
     window.onload = () => {
       generateKelasButtons();
@@ -111,8 +112,6 @@
       if (!jumlah || kelasTerpilih.size === 0) return;
       const list = Array.from(kelasTerpilih);
       const result = [];
-      const history = [];
-
       while (result.length < jumlah) {
         const shuffled = [...list].sort(() => Math.random() - 0.5);
         for (let item of shuffled) {
@@ -125,6 +124,27 @@
         }
       }
       document.getElementById('hasilKelas').value = result.slice(0, jumlah).join('\n');
+    }
+
+    function sinkronKelas() {
+      const hasilLama = document.getElementById('hasilKelas').value.trim().split('\n').map(k => k.trim());
+      const aktif = Array.from(kelasTerpilih);
+      if (aktif.length === 0 || hasilLama.length === 0) return;
+      const mapTerdekat = (kelas) => {
+        if (aktif.includes(kelas)) return kelas;
+        const idx = semuaKelas.indexOf(kelas);
+        let offset = 1;
+        while (offset < semuaKelas.length) {
+          const kiri = semuaKelas[idx - offset];
+          const kanan = semuaKelas[idx + offset];
+          if (kiri && aktif.includes(kiri)) return kiri;
+          if (kanan && aktif.includes(kanan)) return kanan;
+          offset++;
+        }
+        return aktif[0];
+      };
+      const hasilBaru = hasilLama.map(k => mapTerdekat(k));
+      document.getElementById('hasilKelas').value = hasilBaru.join('\n');
     }
 
     function switchTab(tab) {
@@ -178,18 +198,14 @@
       });
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement('div');
-        calendar.appendChild(empty);
-      }
+      for (let i = 0; i < firstDay; i++) calendar.appendChild(document.createElement('div'));
       for (let i = 1; i <= daysInMonth; i++) {
-        const box = document.createElement('div');
         const day = new Date(year, month, i).getDay();
-        const hari = days[day];
-        const tanggalStr = `${String(i).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${String(year % 100).padStart(2,'0')}`;
+        const box = document.createElement('div');
         box.className = 'date-box';
-        box.innerHTML = `<div>${i}</div><div>${hari}</div>`;
-        if (selectedDates.has(tanggalStr)) box.classList.add('selected');
+        box.innerHTML = `<div>${i}</div><div>${days[day]}</div>`;
+        const formatted = `${String(i).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${String(year%100).padStart(2,'0')}`;
+        if (selectedDates.has(formatted)) box.classList.add('selected');
         box.onclick = () => toggleDate(i, month+1, year % 100, box);
         calendar.appendChild(box);
       }

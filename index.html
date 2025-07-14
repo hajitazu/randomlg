@@ -5,99 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pemilih Nama, Kelas & Tanggal</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      background: #f9f9f9;
-      padding: 0;
-    }
-    header {
-      display: flex;
-      justify-content: center;
-      background: #007bff;
-    }
-    header button {
-      flex: 1;
-      padding: 15px;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-      color: white;
-      background: #007bff;
-    }
-    header button.active {
-      background: #0056b3;
-    }
-    .container {
-      padding: 20px;
-      text-align: center;
-    }
-    textarea, input[type="number"] {
-      width: 80%;
-      font-size: 16px;
-      padding: 10px;
-      margin-bottom: 15px;
-    }
-    textarea {
-      height: 100px;
-    }
-    button.action {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 5px;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+    body { font-family: sans-serif; margin: 0; background: #f9f9f9; }
+    header { display: flex; justify-content: center; background: #007bff; }
+    header button { flex: 1; padding: 15px; font-size: 16px; border: none; cursor: pointer; color: white; background: #007bff; }
+    header button.active { background: #0056b3; }
+    .container { padding: 20px; text-align: center; }
+    textarea, input[type="number"] { width: 80%; font-size: 16px; padding: 10px; margin-bottom: 15px; }
+    textarea { height: 100px; }
+    button.action { padding: 10px 20px; font-size: 16px; margin: 5px; border: none; color: white; border-radius: 5px; cursor: pointer; }
     .pick { background-color: #007bff; }
     .copy { background-color: #28a745; }
     .clear { background-color: #dc3545; }
-    .result-area {
-      width: 80%;
-      height: 100px;
-      margin-top: 10px;
-      resize: none;
-    }
+    .result-area { width: 80%; height: 100px; margin-top: 10px; resize: none; }
     .hidden { display: none; }
-    .calendar-header {
-      margin-bottom: 10px;
-    }
-    .calendar-nav {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .calendar-nav button {
-      padding: 5px 10px;
-      font-size: 16px;
-    }
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-      justify-items: center;
-    }
-    .calendar .day {
-      font-weight: bold;
-      text-align: center;
-    }
-    .calendar .date-box {
-      padding: 10px 5px;
-      cursor: pointer;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: white;
-      width: 100%;
-      box-sizing: border-box;
-      text-align: center;
-    }
-    .calendar .selected {
-      background-color: #007bff;
-      color: white;
-    }
+    .kelas-buttons button { margin: 5px; padding: 10px; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -105,7 +26,9 @@
     <button id="tabNama" class="active" onclick="switchTab('nama')">Nama</button>
     <button id="tabKelas" onclick="switchTab('kelas')">Kelas</button>
     <button id="tabTanggal" onclick="switchTab('tanggal')">Tanggal</button>
-  </header>  <div class="container" id="menuNama">
+  </header>
+
+  <div class="container" id="menuNama">
     <h2>Pemilih Nama</h2>
     <textarea id="namaInput" placeholder="Masukkan daftar nama..."></textarea><br>
     <input type="number" id="jumlahNama" placeholder="Jumlah yang ingin dipilih" min="1"><br>
@@ -113,18 +36,19 @@
     <button class="action copy" onclick="copyToClipboard('nama')">Salin</button>
     <button class="action clear" onclick="clearInput('nama')">Bersihkan</button><br>
     <textarea readonly id="hasilNama" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>  <div class="container hidden" id="menuKelas">
+  </div>
+
+  <div class="container hidden" id="menuKelas">
     <h2>Pemilih Kelas</h2>
-    <textarea id="kelasLInput" placeholder="Kelas untuk Laki-laki..."></textarea><br>
-    <textarea id="kelasPInput" placeholder="Kelas untuk Perempuan..."></textarea><br>
-    <label><input type="radio" name="gender" value="l" checked> Laki-laki</label>
-    <label><input type="radio" name="gender" value="p"> Perempuan</label><br><br>
-    <input type="number" id="jumlahKelas" placeholder="Jumlah yang ingin dipilih" min="1"><br>
-    <button class="action pick" onclick="pickRandom('kelas')">Pilih Kelas</button>
+    <div class="kelas-buttons" id="kelasButtons"></div>
+    <input type="number" id="jumlahKelasAuto" placeholder="Jumlah yang ingin dipilih" min="1"><br>
+    <button class="action pick" onclick="pickKelasAuto()">Pilih Kelas</button>
     <button class="action copy" onclick="copyToClipboard('kelas')">Salin</button>
     <button class="action clear" onclick="clearInput('kelas')">Bersihkan</button><br>
     <textarea readonly id="hasilKelas" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>  <div class="container hidden" id="menuTanggal">
+  </div>
+
+  <div class="container hidden" id="menuTanggal">
     <h2>Pilih Tanggal</h2>
     <div class="calendar-header">
       <div class="calendar-nav">
@@ -137,85 +61,84 @@
     <button class="action copy" onclick="copyToClipboard('tanggal')">Salin</button>
     <button class="action clear" onclick="clearInput('tanggal')">Bersihkan</button><br>
     <textarea readonly id="hasilTanggal" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>  <script>
+  </div>
+
+  <script>
     const selectedDates = new Set();
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
 
+    const semuaKelas = ["7A","7B","7C","7D","7E","8A","8B","8C","8D","8E","9A","9B","9C","9D","9E"];
+    let kelasTerpilih = new Set();
+
     window.onload = () => {
-      document.getElementById('namaInput').value = localStorage.getItem('namaInput') || "";
-      document.getElementById('kelasLInput').value = localStorage.getItem('kelasLInput') || "";
-      document.getElementById('kelasPInput').value = localStorage.getItem('kelasPInput') || "";
+      generateKelasButtons();
       generateCalendar(currentMonth, currentYear);
     };
 
+    function generateKelasButtons() {
+      const div = document.getElementById('kelasButtons');
+      semuaKelas.forEach(k => {
+        const btn = document.createElement('button');
+        btn.textContent = k;
+        btn.onclick = () => {
+          if (kelasTerpilih.has(k)) {
+            kelasTerpilih.delete(k);
+            btn.style.backgroundColor = '';
+          } else {
+            kelasTerpilih.add(k);
+            btn.style.backgroundColor = '#007bff';
+            btn.style.color = 'white';
+          }
+        };
+        div.appendChild(btn);
+      });
+    }
+
+    function pickKelasAuto() {
+      const jumlah = parseInt(document.getElementById('jumlahKelasAuto').value);
+      if (!jumlah || kelasTerpilih.size === 0) return;
+      const list = Array.from(kelasTerpilih);
+      const result = [];
+      let index = 0;
+      for (let i = 0; i < jumlah; i++) {
+        result.push(list[index]);
+        index = (index + 1) % list.length;
+      }
+      document.getElementById('hasilKelas').value = result.join('\n');
+    }
+
     function switchTab(tab) {
-      document.getElementById('menuNama').classList.add('hidden');
-      document.getElementById('menuKelas').classList.add('hidden');
-      document.getElementById('menuTanggal').classList.add('hidden');
-      document.getElementById('tabNama').classList.remove('active');
-      document.getElementById('tabKelas').classList.remove('active');
-      document.getElementById('tabTanggal').classList.remove('active');
-
-      document.getElementById('menu' + capitalize(tab)).classList.remove('hidden');
-      document.getElementById('tab' + capitalize(tab)).classList.add('active');
+      ["menuNama","menuKelas","menuTanggal"].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ["tabNama","tabKelas","tabTanggal"].forEach(id => document.getElementById(id).classList.remove('active'));
+      document.getElementById("menu" + capitalize(tab)).classList.remove("hidden");
+      document.getElementById("tab" + capitalize(tab)).classList.add("active");
     }
 
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-
-    function pickRandom(type) {
-      let list = [], jumlah = 0, output = [], pool = [];
-
-      if (type === 'nama') {
-        list = document.getElementById('namaInput').value.trim().split('\n').filter(Boolean);
-        jumlah = parseInt(document.getElementById('jumlahNama').value);
-        localStorage.setItem('namaInput', document.getElementById('namaInput').value);
-      } else {
-        const gender = document.querySelector('input[name="gender"]:checked').value;
-        const source = gender === 'l' ? 'kelasLInput' : 'kelasPInput';
-        list = document.getElementById(source).value.trim().split('\n').filter(Boolean);
-        jumlah = parseInt(document.getElementById('jumlahKelas').value);
-        localStorage.setItem('kelasLInput', document.getElementById('kelasLInput').value);
-        localStorage.setItem('kelasPInput', document.getElementById('kelasPInput').value);
-      }
-
-      if (!jumlah || jumlah < 1 || list.length === 0) return;
-
-      pool = [...list];
-      while (output.length < jumlah) {
-        if (pool.length === 0) pool = [...list];
-        const index = Math.floor(Math.random() * pool.length);
-        output.push(pool.splice(index, 1)[0]);
-      }
-
-      const target = type === 'nama' ? 'hasilNama' : 'hasilKelas';
-      document.getElementById(target).value = output.join('\n');
-    }
+    function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 
     function copyToClipboard(type) {
       const field = type === 'nama' ? 'hasilNama' : type === 'kelas' ? 'hasilKelas' : 'hasilTanggal';
       const button = event.target;
-      navigator.clipboard.writeText(document.getElementById(field).value)
-        .then(() => {
-          const prev = button.textContent;
-          button.textContent = '✅ Disalin';
-          setTimeout(() => button.textContent = prev, 1000);
-        });
+      navigator.clipboard.writeText(document.getElementById(field).value).then(() => {
+        const prev = button.textContent;
+        button.textContent = '✅ Disalin';
+        setTimeout(() => button.textContent = prev, 1000);
+      });
     }
 
     function clearInput(type) {
       if (type === 'nama') {
         document.getElementById('namaInput').value = "";
-        localStorage.removeItem('namaInput');
         document.getElementById('hasilNama').value = "";
       } else if (type === 'kelas') {
-        document.getElementById('kelasLInput').value = "";
-        document.getElementById('kelasPInput').value = "";
-        localStorage.removeItem('kelasLInput');
-        localStorage.removeItem('kelasPInput');
         document.getElementById('hasilKelas').value = "";
+        document.getElementById('jumlahKelasAuto').value = "";
+        kelasTerpilih.clear();
+        document.querySelectorAll('#kelasButtons button').forEach(btn => {
+          btn.style.backgroundColor = '';
+          btn.style.color = '';
+        });
       } else if (type === 'tanggal') {
         selectedDates.clear();
         document.querySelectorAll('.calendar .date-box').forEach(d => d.classList.remove('selected'));
@@ -227,7 +150,6 @@
       const calendar = document.getElementById('calendar');
       calendar.innerHTML = '';
       document.getElementById('calendarMonthYear').textContent = `${monthName(month)} ${year}`;
-
       const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
       days.forEach(d => {
         const el = document.createElement('div');
@@ -235,24 +157,18 @@
         el.textContent = d;
         calendar.appendChild(el);
       });
-
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-
       for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement('div');
-        calendar.appendChild(empty);
+        calendar.appendChild(document.createElement('div'));
       }
-
       for (let i = 1; i <= daysInMonth; i++) {
         const day = new Date(year, month, i).getDay();
         const box = document.createElement('div');
         box.className = 'date-box';
         box.innerHTML = `<div>${i}</div><div>${days[day]}</div>`;
-
         const formatted = `${String(i).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${String(year%100).padStart(2,'0')}`;
         if (selectedDates.has(formatted)) box.classList.add('selected');
-
         box.onclick = () => toggleDate(i, month+1, year % 100, box);
         calendar.appendChild(box);
       }
@@ -277,13 +193,8 @@
 
     function changeMonth(offset) {
       currentMonth += offset;
-      if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      } else if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      }
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
       generateCalendar(currentMonth, currentYear);
     }
 

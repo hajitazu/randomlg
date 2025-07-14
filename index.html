@@ -31,19 +31,15 @@
     <button id="tabNama" class="active" onclick="switchTab('nama')">Nama</button>
     <button id="tabKelas" onclick="switchTab('kelas')">Kelas</button>
     <button id="tabTanggal" onclick="switchTab('tanggal')">Tanggal</button>
-  </header>
-
-  <div class="container" id="menuNama">
+  </header>  <div class="container" id="menuNama">
     <h2>Pemilih Nama</h2>
     <textarea id="namaInput" placeholder="Masukkan daftar nama..."></textarea><br>
     <input type="number" id="jumlahNama" placeholder="Jumlah yang ingin dipilih" min="1"><br>
-    <button class="action pick" onclick="pickRandom('nama')">Pilih Nama</button>
+    <button class="action pick" onclick="pickNama()">Pilih Nama</button>
     <button class="action copy" onclick="copyToClipboard('nama')">Salin</button>
     <button class="action clear" onclick="clearInput('nama')">Bersihkan</button><br>
     <textarea readonly id="hasilNama" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>
-
-  <div class="container hidden" id="menuKelas">
+  </div>  <div class="container hidden" id="menuKelas">
     <h2>Pemilih Kelas</h2>
     <div class="kelas-buttons" id="kelasButtons"></div>
     <input type="number" id="jumlahKelasAuto" placeholder="Jumlah yang ingin dipilih" min="1"><br>
@@ -51,9 +47,7 @@
     <button class="action copy" onclick="copyToClipboard('kelas')">Salin</button>
     <button class="action clear" onclick="clearInput('kelas')">Bersihkan</button><br>
     <textarea readonly id="hasilKelas" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>
-
-  <div class="container hidden" id="menuTanggal">
+  </div>  <div class="container hidden" id="menuTanggal">
     <h2>Pilih Tanggal</h2>
     <div class="calendar-header">
       <div class="calendar-nav">
@@ -66,9 +60,7 @@
     <button class="action copy" onclick="copyToClipboard('tanggal')">Salin</button>
     <button class="action clear" onclick="clearInput('tanggal')">Bersihkan</button><br>
     <textarea readonly id="hasilTanggal" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>
-
-  <script>
+  </div>  <script>
     const selectedDates = new Set();
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
@@ -101,18 +93,38 @@
       });
     }
 
+    function pickNama() {
+      const input = document.getElementById('namaInput').value.trim();
+      const jumlah = parseInt(document.getElementById('jumlahNama').value);
+      const list = input.split('\n').map(x => x.trim()).filter(Boolean);
+      if (!jumlah || list.length === 0) return;
+      let result = [];
+      while (result.length < jumlah) {
+        const shuffled = [...list].sort(() => Math.random() - 0.5);
+        result.push(...shuffled);
+      }
+      document.getElementById('hasilNama').value = result.slice(0, jumlah).join('\n');
+    }
+
     function pickKelasAuto() {
       const jumlah = parseInt(document.getElementById('jumlahKelasAuto').value);
       if (!jumlah || kelasTerpilih.size === 0) return;
       const list = Array.from(kelasTerpilih);
-      const loopCount = Math.ceil(jumlah / list.length);
-      let pool = [];
-      for (let i = 0; i < loopCount; i++) {
+      const result = [];
+      const history = [];
+
+      while (result.length < jumlah) {
         const shuffled = [...list].sort(() => Math.random() - 0.5);
-        pool = pool.concat(shuffled);
+        for (let item of shuffled) {
+          if (result.length >= jumlah) break;
+          const last = result[result.length - 1];
+          const secondLast = result[result.length - 2];
+          if (item !== last && item !== secondLast) {
+            result.push(item);
+          }
+        }
       }
-      const result = pool.slice(0, jumlah);
-      document.getElementById('hasilKelas').value = result.join('\n');
+      document.getElementById('hasilKelas').value = result.slice(0, jumlah).join('\n');
     }
 
     function switchTab(tab) {

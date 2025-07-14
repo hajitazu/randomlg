@@ -20,6 +20,10 @@
     .hidden { display: none; }
     .kelas-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
     .kelas-buttons button { width: 60px; height: 60px; font-size: 16px; border-radius: 10px; }
+    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; justify-items: center; margin-top: 15px; }
+    .day, .date-box { width: 40px; text-align: center; }
+    .date-box { padding: 5px; border-radius: 6px; background: #fff; cursor: pointer; border: 1px solid #ccc; font-size: 14px; }
+    .date-box.selected { background-color: #007bff; color: white; border-color: #007bff; }
   </style>
 </head>
 <body>
@@ -53,9 +57,9 @@
     <h2>Pilih Tanggal</h2>
     <div class="calendar-header">
       <div class="calendar-nav">
-        <button onclick="changeMonth(-1)">&lt;</button>
+        <button onclick="changeMonth(-1)" class="action">&lt;</button>
         <span id="calendarMonthYear"></span>
-        <button onclick="changeMonth(1)">&gt;</button>
+        <button onclick="changeMonth(1)" class="action">&gt;</button>
       </div>
     </div>
     <div id="calendar" class="calendar"></div>
@@ -101,16 +105,12 @@
       const jumlah = parseInt(document.getElementById('jumlahKelasAuto').value);
       if (!jumlah || kelasTerpilih.size === 0) return;
       const list = Array.from(kelasTerpilih);
+      const loopCount = Math.ceil(jumlah / list.length);
       let pool = [];
-
-      // Hitung jumlah pengulangan minimum untuk adil
-      const repeat = Math.ceil(jumlah / list.length);
-
-      for (let i = 0; i < repeat; i++) {
+      for (let i = 0; i < loopCount; i++) {
         const shuffled = [...list].sort(() => Math.random() - 0.5);
-        pool.push(...shuffled);
+        pool = pool.concat(shuffled);
       }
-
       const result = pool.slice(0, jumlah);
       document.getElementById('hasilKelas').value = result.join('\n');
     }
@@ -167,15 +167,17 @@
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       for (let i = 0; i < firstDay; i++) {
-        calendar.appendChild(document.createElement('div'));
+        const empty = document.createElement('div');
+        calendar.appendChild(empty);
       }
       for (let i = 1; i <= daysInMonth; i++) {
-        const day = new Date(year, month, i).getDay();
         const box = document.createElement('div');
+        const day = new Date(year, month, i).getDay();
+        const hari = days[day];
+        const tanggalStr = `${String(i).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${String(year % 100).padStart(2,'0')}`;
         box.className = 'date-box';
-        box.innerHTML = `<div>${i}</div><div>${days[day]}</div>`;
-        const formatted = `${String(i).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${String(year%100).padStart(2,'0')}`;
-        if (selectedDates.has(formatted)) box.classList.add('selected');
+        box.innerHTML = `<div>${i}</div><div>${hari}</div>`;
+        if (selectedDates.has(tanggalStr)) box.classList.add('selected');
         box.onclick = () => toggleDate(i, month+1, year % 100, box);
         calendar.appendChild(box);
       }

@@ -18,7 +18,8 @@
     .clear { background-color: #dc3545; }
     .result-area { width: 80%; height: 100px; margin-top: 10px; resize: none; }
     .hidden { display: none; }
-    .kelas-buttons button { margin: 5px; padding: 10px; font-size: 14px; }
+    .kelas-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .kelas-buttons button { width: 60px; height: 60px; font-size: 16px; border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -85,6 +86,7 @@
           if (kelasTerpilih.has(k)) {
             kelasTerpilih.delete(k);
             btn.style.backgroundColor = '';
+            btn.style.color = '';
           } else {
             kelasTerpilih.add(k);
             btn.style.backgroundColor = '#007bff';
@@ -99,12 +101,17 @@
       const jumlah = parseInt(document.getElementById('jumlahKelasAuto').value);
       if (!jumlah || kelasTerpilih.size === 0) return;
       const list = Array.from(kelasTerpilih);
-      const result = [];
-      let index = 0;
-      for (let i = 0; i < jumlah; i++) {
-        result.push(list[index]);
-        index = (index + 1) % list.length;
+      let pool = [];
+
+      // Hitung jumlah pengulangan minimum untuk adil
+      const repeat = Math.ceil(jumlah / list.length);
+
+      for (let i = 0; i < repeat; i++) {
+        const shuffled = [...list].sort(() => Math.random() - 0.5);
+        pool.push(...shuffled);
       }
+
+      const result = pool.slice(0, jumlah);
       document.getElementById('hasilKelas').value = result.join('\n');
     }
 

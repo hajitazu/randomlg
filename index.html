@@ -1,242 +1,88 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pemilih Nama, Kelas & Tanggal</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jadwal Satgas Adab</title>
   <style>
-    body { font-family: sans-serif; margin: 0; background: #f9f9f9; }
-    header { display: flex; justify-content: center; background: #007bff; }
-    header button { flex: 1; padding: 15px; font-size: 16px; border: none; cursor: pointer; color: white; background: #007bff; }
-    header button.active { background: #0056b3; }
-    .container { padding: 20px; text-align: center; }
-    textarea, input[type="number"] { width: 80%; font-size: 16px; padding: 10px; margin-bottom: 15px; }
-    textarea { height: 100px; }
-    button.action { padding: 10px 20px; font-size: 16px; margin: 5px; border: none; color: white; border-radius: 5px; cursor: pointer; }
-    .pick { background-color: #007bff; }
-    .copy { background-color: #28a745; }
-    .clear { background-color: #dc3545; }
-    .sync { background-color: #6f42c1; }
-    .result-area { width: 80%; height: 100px; margin-top: 10px; resize: none; }
-    .hidden { display: none; }
-    .kelas-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-    .kelas-buttons button { width: 60px; height: 60px; font-size: 16px; border-radius: 10px; }
-    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; justify-items: center; margin-top: 15px; }
-    .day, .date-box { width: 40px; text-align: center; }
-    .date-box { padding: 5px; border-radius: 6px; background: #fff; cursor: pointer; border: 1px solid #ccc; font-size: 14px; }
-    .date-box.selected { background-color: #007bff; color: white; border-color: #007bff; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .input-group { margin-bottom: 15px; }
+    textarea { width: 100%; height: 80px; }
+    .output { white-space: pre-line; background: #f4f4f4; padding: 10px; border: 1px solid #ccc; margin-top: 20px; }
+    .section { margin-bottom: 20px; }
+    .label { font-weight: bold; }
   </style>
 </head>
 <body>
-  <header>
-    <button id="tabNama" class="active" onclick="switchTab('nama')">Nama</button>
-    <button id="tabKelas" onclick="switchTab('kelas')">Kelas</button>
-    <button id="tabTanggal" onclick="switchTab('tanggal')">Tanggal</button>
-  </header>  <div class="container" id="menuNama">
-    <h2>Pemilih Nama</h2>
-    <textarea id="namaInput" placeholder="Masukkan daftar nama..."></textarea><br>
-    <input type="number" id="jumlahNama" placeholder="Jumlah yang ingin dipilih" min="1"><br>
-    <button class="action pick" onclick="pickNama()">Pilih Nama</button>
-    <button class="action copy" onclick="copyToClipboard('nama')">Salin</button>
-    <button class="action clear" onclick="clearInput('nama')">Bersihkan</button><br>
-    <textarea readonly id="hasilNama" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>  <div class="container hidden" id="menuKelas">
-    <h2>Pemilih Kelas</h2>
-    <div class="kelas-buttons" id="kelasButtons"></div>
-    <input type="number" id="jumlahKelasAuto" placeholder="Jumlah yang ingin dipilih" min="1"><br>
-    <button class="action pick" onclick="pickKelasAuto()">Pilih Kelas</button>
-    <button class="action sync" onclick="sinkronKelas()">Sinkron</button>
-    <button class="action copy" onclick="copyToClipboard('kelas')">Salin</button>
-    <button class="action clear" onclick="clearInput('kelas')">Bersihkan</button><br>
-    <textarea readonly id="hasilKelas" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>  <div class="container hidden" id="menuTanggal">
-    <h2>Pilih Tanggal</h2>
-    <div class="calendar-header">
-      <div class="calendar-nav">
-        <button onclick="changeMonth(-1)" class="action">&lt;</button>
-        <span id="calendarMonthYear"></span>
-        <button onclick="changeMonth(1)" class="action">&gt;</button>
-      </div>
-    </div>
-    <div id="calendar" class="calendar"></div>
-    <button class="action copy" onclick="copyToClipboard('tanggal')">Salin</button>
-    <button class="action clear" onclick="clearInput('tanggal')">Bersihkan</button><br>
-    <textarea readonly id="hasilTanggal" class="result-area" placeholder="Hasil akan muncul di sini..."></textarea>
-  </div>  <script>
-    const semuaKelas = ["7A","7B","7C","7D","7E","8A","8B","8C","8D","8E","9A","9B","9C","9D","9E"];
-    let kelasTerpilih = new Set();
-    const selectedDates = new Set();
-    let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
+  <h2>🗓️ Jadwal Satgas Adab</h2>
 
-    window.onload = () => {
-      generateKelasButtons();
-      generateCalendar(currentMonth, currentYear);
-    };
+  <div class="section">
+    <label class="label">Pilih Tanggal:</label>
+    <input id="tanggal" type="date" placeholder="dd/mm/yy">
+  </div>
 
-    function generateKelasButtons() {
-      const div = document.getElementById('kelasButtons');
-      semuaKelas.forEach(k => {
-        const btn = document.createElement('button');
-        btn.textContent = k;
-        btn.onclick = () => {
-          if (kelasTerpilih.has(k)) {
-            kelasTerpilih.delete(k);
-            btn.style.backgroundColor = '';
-            btn.style.color = '';
-          } else {
-            kelasTerpilih.add(k);
-            btn.style.backgroundColor = '#007bff';
-            btn.style.color = 'white';
-          }
-        };
-        div.appendChild(btn);
-      });
+  <div class="section">
+    <label class="label">👨 Laki-laki</label>
+    <textarea id="laki"></textarea>
+  </div>
+  <div class="section">
+    <label class="label">👩 Perempuan</label>
+    <textarea id="perempuan"></textarea>
+  </div>
+  <div class="section">
+    <label class="label">🤲 Tadarus</label>
+    <textarea id="tadarus"></textarea>
+  </div>
+  <div class="section">
+    <button onclick="generateJadwal()">Generate</button>
+  </div>
+
+  <div class="section">
+    <label class="label">Sudah Bertugas</label>
+    <textarea id="sudahBertugas" readonly></textarea>
+  </div>
+
+  <div class="output" id="jadwalOutput"></div>
+
+  <script>
+    function getRandomItems(arr, count) {
+      let shuffled = arr.sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
     }
 
-    function pickNama() {
-      const input = document.getElementById('namaInput').value.trim();
-      const jumlah = parseInt(document.getElementById('jumlahNama').value);
-      const list = input.split('\n').map(x => x.trim()).filter(Boolean);
-      if (!jumlah || list.length === 0) return;
-      let result = [];
-      while (result.length < jumlah) {
-        const shuffled = [...list].sort(() => Math.random() - 0.5);
-        result.push(...shuffled);
-      }
-      document.getElementById('hasilNama').value = result.slice(0, jumlah).join('\n');
+    function generateJadwal() {
+      const tanggal = document.getElementById('tanggal').value;
+      const laki = document.getElementById('laki').value.split("\n").map(x => x.trim()).filter(x => x);
+      const perempuan = document.getElementById('perempuan').value.split("\n").map(x => x.trim()).filter(x => x);
+      const tadarus = document.getElementById('tadarus').value.split("\n").map(x => x.trim()).filter(x => x);
+      const sudah = document.getElementById('sudahBertugas').value.split("\n").map(x => x.trim());
+
+      const availableLaki = laki.filter(n => !sudah.includes(n));
+      const availablePerempuan = perempuan.filter(n => !sudah.includes(n));
+      const availableTadarus = tadarus.filter(n => !sudah.includes(n));
+
+      const selectedLaki = getRandomItems(availableLaki, 6);
+      const selectedPerempuan = getRandomItems(availablePerempuan, 6);
+      const selectedTadarus = getRandomItems(availableTadarus, 1);
+
+      const allSelected = [...selectedLaki, ...selectedPerempuan, ...selectedTadarus];
+      const updatedSudah = [...sudah, ...allSelected].filter(Boolean);
+
+      let output = `Jadwal petugas satgas adab ${formatTanggal(tanggal)}\n\n`;
+      output += `Jaga Dalam :\n${selectedLaki[0] || ""}\n${selectedLaki[1] || ""}\n${selectedPerempuan[0] || ""}\n${selectedPerempuan[1] || ""}\n\n`;
+      output += `Jaga Luar :\n${selectedLaki[2] || ""}\n${selectedLaki[3] || ""}\n${selectedPerempuan[2] || ""}\n${selectedPerempuan[3] || ""}\n\n`;
+      output += `Tempat Wudhu :\n${selectedLaki[4] || ""}\n${selectedLaki[5] || ""}\n${selectedPerempuan[4] || ""}\n${selectedPerempuan[5] || ""}\n\n`;
+      output += `Tadarus :\n${selectedTadarus[0] || ""}\n\n`;
+      output += `Note :\nPetugas keluar kelas 5 menit sebelum bell dan langsung menempati tempat tugas masing2`;
+
+      document.getElementById("jadwalOutput").textContent = output;
+      document.getElementById("sudahBertugas").value = [...new Set(updatedSudah)].join("\n");
     }
 
-    function pickKelasAuto() {
-      const jumlah = parseInt(document.getElementById('jumlahKelasAuto').value);
-      if (!jumlah || kelasTerpilih.size === 0) return;
-      const list = Array.from(kelasTerpilih);
-      const result = [];
-      while (result.length < jumlah) {
-        const shuffled = [...list].sort(() => Math.random() - 0.5);
-        for (let item of shuffled) {
-          if (result.length >= jumlah) break;
-          const last = result[result.length - 1];
-          const secondLast = result[result.length - 2];
-          if (item !== last && item !== secondLast) {
-            result.push(item);
-          }
-        }
-      }
-      document.getElementById('hasilKelas').value = result.slice(0, jumlah).join('\n');
-    }
-
-    function sinkronKelas() {
-      const hasilLama = document.getElementById('hasilKelas').value.trim().split('\n').map(k => k.trim());
-      const aktif = Array.from(kelasTerpilih);
-      if (aktif.length === 0 || hasilLama.length === 0) return;
-      const mapTerdekat = (kelas) => {
-        if (aktif.includes(kelas)) return kelas;
-        const idx = semuaKelas.indexOf(kelas);
-        let offset = 1;
-        while (offset < semuaKelas.length) {
-          const kiri = semuaKelas[idx - offset];
-          const kanan = semuaKelas[idx + offset];
-          if (kiri && aktif.includes(kiri)) return kiri;
-          if (kanan && aktif.includes(kanan)) return kanan;
-          offset++;
-        }
-        return aktif[0];
-      };
-      const hasilBaru = hasilLama.map(k => mapTerdekat(k));
-      document.getElementById('hasilKelas').value = hasilBaru.join('\n');
-    }
-
-    function switchTab(tab) {
-      ["menuNama","menuKelas","menuTanggal"].forEach(id => document.getElementById(id).classList.add('hidden'));
-      ["tabNama","tabKelas","tabTanggal"].forEach(id => document.getElementById(id).classList.remove('active'));
-      document.getElementById("menu" + capitalize(tab)).classList.remove("hidden");
-      document.getElementById("tab" + capitalize(tab)).classList.add("active");
-    }
-
-    function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
-
-    function copyToClipboard(type) {
-      const field = type === 'nama' ? 'hasilNama' : type === 'kelas' ? 'hasilKelas' : 'hasilTanggal';
-      const button = event.target;
-      navigator.clipboard.writeText(document.getElementById(field).value).then(() => {
-        const prev = button.textContent;
-        button.textContent = '✅ Disalin';
-        setTimeout(() => button.textContent = prev, 1000);
-      });
-    }
-
-    function clearInput(type) {
-      if (type === 'nama') {
-        document.getElementById('namaInput').value = "";
-        document.getElementById('hasilNama').value = "";
-      } else if (type === 'kelas') {
-        document.getElementById('hasilKelas').value = "";
-        document.getElementById('jumlahKelasAuto').value = "";
-        kelasTerpilih.clear();
-        document.querySelectorAll('#kelasButtons button').forEach(btn => {
-          btn.style.backgroundColor = '';
-          btn.style.color = '';
-        });
-      } else if (type === 'tanggal') {
-        selectedDates.clear();
-        document.querySelectorAll('.calendar .date-box').forEach(d => d.classList.remove('selected'));
-        document.getElementById('hasilTanggal').value = "";
-      }
-    }
-
-    function generateCalendar(month, year) {
-      const calendar = document.getElementById('calendar');
-      calendar.innerHTML = '';
-      document.getElementById('calendarMonthYear').textContent = `${monthName(month)} ${year}`;
-      const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-      days.forEach(d => {
-        const el = document.createElement('div');
-        el.className = 'day';
-        el.textContent = d;
-        calendar.appendChild(el);
-      });
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      for (let i = 0; i < firstDay; i++) calendar.appendChild(document.createElement('div'));
-      for (let i = 1; i <= daysInMonth; i++) {
-        const day = new Date(year, month, i).getDay();
-        const box = document.createElement('div');
-        box.className = 'date-box';
-        box.innerHTML = `<div>${i}</div><div>${days[day]}</div>`;
-        const formatted = `${String(i).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${String(year%100).padStart(2,'0')}`;
-        if (selectedDates.has(formatted)) box.classList.add('selected');
-        box.onclick = () => toggleDate(i, month+1, year % 100, box);
-        calendar.appendChild(box);
-      }
-    }
-
-    function toggleDate(d, m, y, el) {
-      const formatted = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${String(y).padStart(2,'0')}`;
-      if (selectedDates.has(formatted)) {
-        selectedDates.delete(formatted);
-        el.classList.remove('selected');
-      } else {
-        selectedDates.add(formatted);
-        el.classList.add('selected');
-      }
-      const sorted = Array.from(selectedDates).sort((a, b) => {
-        const [da, ma, ya] = a.split('/').map(Number);
-        const [db, mb, yb] = b.split('/').map(Number);
-        return new Date(2000 + ya, ma - 1, da) - new Date(2000 + yb, mb - 1, db);
-      });
-      document.getElementById('hasilTanggal').value = sorted.join('\n');
-    }
-
-    function changeMonth(offset) {
-      currentMonth += offset;
-      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-      else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-      generateCalendar(currentMonth, currentYear);
-    }
-
-    function monthName(m) {
-      return ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][m];
+    function formatTanggal(dateStr) {
+      if (!dateStr) return 'dd/mm/yy';
+      const [yyyy, mm, dd] = dateStr.split("-");
+      return `${dd}/${mm}/${yyyy.slice(2)}`;
     }
   </script>
 </body>
